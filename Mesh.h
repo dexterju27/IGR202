@@ -30,7 +30,7 @@ public:
     inline virtual ~Vertex () {}
     Vec3f p;
     Vec3f n;
-    std::vector<unsigned int> edge;
+    std::vector<unsigned long> edge;
 };
 
 /// A Triangle class expressed as a triplet of indices (over an external vertex list)
@@ -38,16 +38,19 @@ class Triangle {
 public:
     inline Triangle () {
         v[0] = v[1] = v[2] = 0;
+        willBeDelete = false;
     }
     inline Triangle (const Triangle & t) {
         v[0] = t.v[0];
         v[1] = t.v[1];
         v[2] = t.v[2];
+        willBeDelete = t.willBeDelete;
     }
     inline Triangle (unsigned int v0, unsigned int v1, unsigned int v2) {
         v[0] = v0;
         v[1] = v1;
         v[2] = v2;
+        willBeDelete = false;
     }
     inline virtual ~Triangle () {}
     inline Triangle & operator= (const Triangle & t) {
@@ -57,6 +60,8 @@ public:
         return (*this);
     }
     unsigned int v[3];
+    unsigned int e[3];
+    bool willBeDelete;
 };
 
 /// A Mesh class, storing a list of vertices and a list of triangles indexed over it.
@@ -64,7 +69,7 @@ class Mesh {
 public:
 	std::vector<Vertex> V;
 	std::vector<Triangle> T;
-
+    std::vector<Edge>  E; // vector for edges
 
 
     /// Loads the mesh from a <file>.off
@@ -78,11 +83,13 @@ public:
 
     void smooth ();
 
-    void simplifyMesh (unsigned int r);
+//    void simplifyMesh (unsigned int r);
 
     float max (float x, float y);
 
-    void splitEdges (float l );
+  void splitEdges (float l );
+    
+    void createEdgeList ();
 
-  void splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle);
+//  void splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle);
 };

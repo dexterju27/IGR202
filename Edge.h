@@ -9,6 +9,10 @@
 #define EDGE_H
 
 #include <map>
+#include "Vec3.h"
+#include "Mesh.h"
+
+
 
 // -------------------------------------------------
 // Intermediate Edge structure for hashed adjacency
@@ -17,15 +21,21 @@
 struct Edge {
 public:
   inline Edge (unsigned int v0, unsigned int v1) {
-    if (v0 < v1) {v[0] = v0; v[1] = v1; } else {v[0] = v1; v[1] = v0; }
+      if (v0 < v1) {v[0] = v0; v[1] = v1; } else {v[0] = v1; v[1] = v0; traiter = false;}
   }
-  inline Edge (const Edge & e) { v[0] = e.v[0]; v[1] = e.v[1]; }
+    inline Edge (const Edge & e) { v[0] = e.v[0]; v[1] = e.v[1]; traiter = e.traiter;}
   inline virtual ~Edge () {}
   inline Edge & operator= (const Edge & e) { v[0] = e.v[0]; v[1] = e.v[1]; return (*this); }
   inline bool operator== (const Edge & e) { return (v[0] == e.v[0] && v[1] == e.v[1]); }
   inline bool operator< (const Edge & e) { return (v[0] < e.v[0] || (v[0] == e.v[0] && v[1] < e.v[1])); }
-  inline bool contains (unsigned int i) const { return (v[0] == i || v[1] == i); }
-  unsigned int index;
+  
+    inline bool contains (unsigned int i) const { return (v[0] == i || v[1] == i); }
+  //unsigned int index; // il ne faut pas un index pour edge.
+    
+    unsigned int v[2];
+    std::vector<int> t;
+    bool traiter;
+    
 };
 
 struct compareEdge {
