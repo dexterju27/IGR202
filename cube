@@ -1,0 +1,49 @@
+void Mesh::simplifyMesh(unsigned int r) {
+
+	// Creer un cube
+	float maxX = 0.0;
+	float maxY = 0.0;
+	float maxZ = 0.0;
+	for (size_t i = 0; i < V.size(); i++) {
+		/* code */
+		Vec3f cePoint = V[i].p;
+		if (abs(cePoint.x) > maxX) {
+			/* code */
+			maxX = abs(cePoint.x);
+		}
+		if (abs(cePoint.y) > maxX) {
+			/* code */
+			maxY = abs(cePoint.y);
+		}
+		if (abs(cePoint.z) > maxX) {
+			/* code */
+			maxZ = abs(cePoint.z);
+		}
+
+	}
+
+	float sizeCube = max(maxX, max(maxY, maxZ));
+	sizeCube = 1.1 * sizeCube;
+	float smallSize = sizeCube / r;
+	Vec3f offSet(sizeCube,sizeCube,sizeCube);
+	int 2 * sizeCube
+	for (size_t i = 0; i < count; i++) {
+		/* code */
+		// deplacer
+		Vec3f cePoint = V[i].p;
+		cePoint += offSet;
+		cePoint.x / smallSize);
+		cePoint.y / smallSize);
+		cePoint.z / smallSize);
+
+		}
+
+
+
+	}
+
+
+
+
+
+}
