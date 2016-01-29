@@ -20,8 +20,9 @@
 #include <cmath>
 #include <vector>
 #include "Vec3.h"
+#include "Edge.h"
 
-/// A simple vertex class storing position and normal
+/// A simple vertex class storing position() and normal
 class Vertex {
 public:
     inline Vertex () {}
@@ -29,6 +30,7 @@ public:
     inline virtual ~Vertex () {}
     Vec3f p;
     Vec3f n;
+    std::vector<unsigned int> edge;
 };
 
 /// A Triangle class expressed as a triplet of indices (over an external vertex list)
@@ -82,5 +84,5 @@ public:
 
     void splitEdges (float l );
 
-    void splitEdgesHander (int numberOfTriangle, int nbPointA, int nbPointB, int nbPointC) ;
+  void splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle);
 };

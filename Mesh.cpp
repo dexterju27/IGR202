@@ -122,6 +122,12 @@ void Mesh::splitEdges (float l ) {
 	 Vertex & v0 = V[T[i].v[0]];
 	 Vertex & v1 = V[T[i].v[1]];
 	 Vertex & v2 = V[T[i].v[2]];
+	Edge e0 = Edge(T[i].v[0], T[i].v[1]);
+	Edge e1 = Edge(T[i].v[1], T[i].v[2]);
+	Edge e2 = Edge(T[i].v[2], T[i].v[0]);
+
+	std::vector<Edge> edgesWaiting;
+
 
 	Vec3f point0 = Vec3f(v0.p);
 	Vec3f point1 = Vec3f(v1.p);
@@ -131,23 +137,42 @@ void Mesh::splitEdges (float l ) {
 	Vec3f length1 = point2 - point1;
 	Vec3f length2 = point2 - point0;
  if (length0.length() >= coff ) {
+	edgesWaiting.push_back(e0);
 
-	splitEdgesHander (currentTriangle, T[currentTriangle].v[1], T[currentTriangle].v[0],T[currentTriangle].v[2] );
-	i += 2;
+	//splitEdgesHander (currentTriangle, T[currentTriangle].v[1], T[currentTriangle].v[0],T[currentTriangle].v[2] );
+	//i += 2;
 }
 
 if (length1.length() >= coff) {
 	/* code */
-
-		splitEdgesHander ( currentTriangle, T[currentTriangle].v[2], T[currentTriangle].v[1],T[currentTriangle].v[0]);
-		i += 2;
+	edgesWaiting.push_back(e1);
+	//edgesToDeal++;
+	//	splitEdgesHander ( currentTriangle, T[currentTriangle].v[2], T[currentTriangle].v[1],T[currentTriangle].v[0]);
+		//i += 2;
 }
 
 if (length2.length() >= coff) {
 	/* code */
-	splitEdgesHander (currentTriangle, T[currentTriangle].v[0], T[currentTriangle].v[2],T[currentTriangle].v[1]);
-	T.erase(T.begin() + currentTriangle);
-	i += 1;
+	edgesWaiting.push_back(e2);
+	//edgesToDeal++
+	//splitEdgesHander (currentTriangle, T[currentTriangle].v[0], T[currentTriangle].v[2],T[currentTriangle].v[1]);
+	//T.erase(T.begin() + currentTriangle);
+	//i += 1;
+
+}
+
+switch (edgesWaiting.size()) {
+	case 0:
+	break;
+	case 1:
+		splitEdgesHanderOne (edgesWaiting,currentTriangle);
+		break;
+	case 2:
+		splitEdgesHanderTwo (edgesWaiting,currentTriangle);
+		break;
+	case 3:
+		//splitEdgesHanderThree (edgesWaiting,currentTriangle);
+	break;
 
 }
 
@@ -156,19 +181,30 @@ if (length2.length() >= coff) {
 return;
 }
 
-void Mesh::splitEdgesHander (int numberOfTriangle, int nbPointA, int nbPointB, int nbPointC) {
-	Vec3f pointA = Vec3f (V[nbPointA].p);
-	Vec3f pointB = Vec3f (V[nbPointB].p);
+void Mesh::splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle) {
+	std::vector<Edge>::iterator iter = edgesWaiting.begin();
+	Vec3f pointA = Vec3f (V[iter->v[0]].p);
+	Vec3f pointB = Vec3f (V[iter->v[1]].p);
 
 	Vec3f middlePoint = (pointA + pointB) / 2.0;
-	Vec3f middleNormale = Vec3f ((V[nbPointA].n + V[nbPointB].n) / 2.0 );
+	Vec3f middleNormale = Vec3f ((V[iter->v[0]].n + V[iter->v[0]].n) / 2.0 );
 	Vertex middlePointAdd =  Vertex(middlePoint,middleNormale);
 	V.push_back(middlePointAdd);
-	//T.erase(T.begin() + numberOfTriangle);
 
-	Triangle triangle0 = Triangle(nbPointA, nbPointC,V.size() -1);
-	T.insert(T.begin() + numberOfTriangle + 1 ,triangle0);
-	triangle0 = Triangle(V.size() -1,nbPointC, nbPointB); ;
-	T.insert(T.begin() + numberOfTriangle + 2, triangle0);
+	int nbPointC = 0;
+	while (iter->contains(T[numberOfTriangle].v[nbPointC]) == false) {
+		/* code */
+		nbPointC++;
+	}
+
+	T.erase(T.begin() + numberOfTriangle);
+	Triangle triangle0 = Triangle(iter->v[0], nbPointC,V.size() -1);
+	T.insert(T.begin() + numberOfTriangle ,triangle0);
+	triangle0 = Triangle(V.size() -1,nbPointC, iter->v[1]); ;
+	T.insert(T.begin() + numberOfTriangle + 1, triangle0);
 	return;
+}
+
+Mesh::splitEdgesHanderTwo (std::vector<Edge> edgesWaiting, int numberOfTriangle) {
+
 }
