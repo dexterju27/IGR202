@@ -20,3 +20,4 @@ clean:
 Camera.o: Camera.cpp Camera.h Vec3.h
 Mesh.o: Mesh.cpp Mesh.h Vec3.h Edge.h
 Main.o: Main.cpp Vec3.h Camera.h Mesh.h Edge.h
+Edge.o: Edge.cpp Mesh.h Vec3.h Edge.h
