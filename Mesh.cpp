@@ -183,30 +183,32 @@ void Mesh::centerAndScaleToUnit () {
 
 void Mesh::createEdgeList() {
     E.clear();
+		std::cout << "Creating list" << std::endl;
    // unsigned int id = 0;
     for (int i  = 0; i < T.size(); i++) {
         Edge edge0 = Edge(T[i].v[0], T[i].v[1]);
         Edge edge1 = Edge(T[i].v[1], T[i].v[2]);
         Edge edge2 = Edge(T[i].v[2], T[i].v[0]);
-        
+
         int edgeIndex0 = -1;
         int edgeIndex1 = -1;
         int edgeIndex2 = -1;
-        
+
         for (int j  = 0; j < E.size(); j++) {
+					//check whether this edge is already in the list
             if ( edge0 == E[j]) {
                 edgeIndex0 = j;
             }
-            
+
             if (edge1 == E[j]) {
                 edgeIndex1 = j;
             }
-            
+
             if (edge2 == E[j]) {
                 edgeIndex2 = j;
             }
         }
-        
+
         // if edgeIndex == -1 add new edge
         if (edgeIndex0 == -1) {
             edge0.t.push_back(i);
@@ -222,17 +224,17 @@ void Mesh::createEdgeList() {
             T[i].e[0] = edgeIndex0;
 
         }
-        
+
         if (edgeIndex1 == -1) {
             edge1.t.push_back(i);
             V[T[i].v[1]].edge.push_back(E.size());
             V[T[i].v[2]].edge.push_back(E.size());
             T[i].e[1] = E.size();
             E.push_back(edge1);
-            
+
         }
         else {
-            
+
             E[edgeIndex1].t.push_back(i);
             V[T[i].v[1]].edge.push_back(edgeIndex1);
             V[T[i].v[2]].edge.push_back(edgeIndex1);
@@ -240,7 +242,7 @@ void Mesh::createEdgeList() {
 
 
         }
-        
+
         if (edgeIndex2 == -1) {
             edge2.t.push_back(i);
             V[T[i].v[2]].edge.push_back(E.size());
@@ -248,7 +250,7 @@ void Mesh::createEdgeList() {
             T[i].e[2] = E.size();
             E.push_back(edge2);
             }
-        
+
         else {
             E[edgeIndex2].t.push_back(i);
             V[T[i].v[2]].edge.push_back(edgeIndex2);
@@ -257,9 +259,12 @@ void Mesh::createEdgeList() {
 
 
         }
-        
+
     }
-    
+
+		std::cout << "E.SIZE() IS" << E.size() << std::endl;
+		return;
+
 }
 //void Mesh::splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle) {
 //	std::vector<Edge>::iterator iter = edgesWaiting.begin();
@@ -293,6 +298,8 @@ void Mesh::createEdgeList() {
 void Mesh::splitEdges(float l) {
     float coff = l * 4.0 / 3.0;
     int originalSize = E.size();
+		std::cout << "THe coff is " << coff << std::endl;
+		std::cout << "function called " << std::endl;
     for (int i = 0; i < originalSize; i++) {
         if (E[i].traiter == true) {
             continue;
@@ -305,15 +312,18 @@ void Mesh::splitEdges(float l) {
         int nbPointB = E[i].v[1];
         int nbPointC = 0;
         int nbPointD = 0;
-        
+
         Vertex middlePoint;
         Vec3f length = pointA.p - pointB.p;
+				//std::cout << length.length() << "THe number of tiangle "<<  E[i].t.size() <<  std::endl;
         if (length.length() >= coff && E[i].t.size() == 2 ) {
             //split do nothing with frontier
-            
+
             int triangleAdj0 = E[i].t[0];
             int triangleAdj1 = E[i].t[1];
-            
+						if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
+							continue;
+						}
             //search for another point
             for (int k = 0; k < 3; k++) {
                 if ( E[i].contains(T[triangleAdj0].v[k]) == false) {
@@ -326,27 +336,28 @@ void Mesh::splitEdges(float l) {
                 }
 
             }
-            
+
             T[triangleAdj0].willBeDelete = true;
             T[triangleAdj1].willBeDelete = true;
             middlePoint.p = (pointB.p + pointA.p) / 2;
             middlePoint.n = (pointB.n + pointA.n) / 2;
-            
+
             //add two edges and four triangles
-            
+
             Triangle newTriangle0 = Triangle(nbPointA,nbPointC,V.size());
-            Triangle newTriangle1 = Triangle(V.size(),nbPointC,nbPointB);
-            Triangle newTriangle2 = Triangle(V.size(),nbPointB,nbPointD);
-            Triangle newTriangle3 = Triangle(V.size(),nbPointA,nbPointC);
-            
+            Triangle newTriangle1 = Triangle(nbPointC,nbPointB,V.size());
+            Triangle newTriangle2 = Triangle(nbPointB,nbPointD,V.size());
+            Triangle newTriangle3 = Triangle(nbPointD,nbPointA,V.size());
+						std::cout << "add triangles" << std::endl;
+
             V.push_back(middlePoint);
             T.push_back(newTriangle0);
             T.push_back(newTriangle1);
             T.push_back(newTriangle2);
             T.push_back(newTriangle3);
-            
+
         }
-        
+
     }
     for (std::vector<Triangle>::iterator iter = T.begin(); iter != T.end(); iter++) {
             if (iter->willBeDelete == true) //delete them
@@ -354,6 +365,7 @@ void Mesh::splitEdges(float l) {
                 T.erase(iter);
             }
     }
+		createEdgeList();
     return;
-    
+
 }

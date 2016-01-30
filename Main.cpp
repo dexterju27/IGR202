@@ -90,7 +90,7 @@ void initMaterial () {
 
 void init (const char * modelFilename) {
     glCullFace (GL_BACK);     // Specifies the faces to cull (here the ones pointing away from the camera)
-    glEnable (GL_CULL_FACE); // Enables face culling (based on the orientation defined by the CW/CCW enumeration).
+    //glEnable (GL_CULL_FACE); // Enables face culling (based on the orientation defined by the CW/CCW enumeration).
     glDepthFunc (GL_LESS); // Specify the depth test for the z-buffer
     glEnable (GL_DEPTH_TEST); // Enable the z-buffer in the rasterization
 	glLineWidth (2.0); // Set the width of edges in GL_LINE polygon mode
@@ -148,6 +148,9 @@ void key (unsigned char keyPressed, int x, int y) {
 		glGetIntegerv (GL_POLYGON_MODE, mode);
 		glPolygonMode (GL_FRONT_AND_BACK, mode[1] ==  GL_FILL ? GL_LINE : GL_FILL);
         break;
+		case 'c':
+			mesh.createEdgeList();
+			break;
 		case 's':
 			mesh.splitEdges (0.40);
         break;
