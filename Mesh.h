@@ -73,6 +73,7 @@ public:
 	std::vector<Vertex> V;
 	std::vector<Triangle> T;
     std::vector<Edge>  E; // vector for edges
+    EdgeMapIndex edgeMap;
 
 
     /// Loads the mesh from a <file>.off

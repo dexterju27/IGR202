@@ -184,6 +184,10 @@ void Mesh::centerAndScaleToUnit () {
 
 void Mesh::createEdgeList() {
     E.clear();
+    for (int i = 0; i < V.size(); i++) {
+        V[i].edge.clear(); //clear all the edges
+    }
+
 		std::cout << "Creating list" << std::endl;
    // unsigned int id = 0;
     for (int i  = 0; i < T.size(); i++) {
@@ -263,7 +267,7 @@ void Mesh::createEdgeList() {
 
     }
 
-		std::cout << "E.SIZE() IS" << E.size() << std::endl;
+		std::cout << "E.SIZE() is " << E.size() << std::endl;
 		return;
 
 }
@@ -297,11 +301,14 @@ void Mesh::createEdgeList() {
 
 
 void Mesh::splitEdges(float l) {
+
     float coff = l * 4.0 / 3.0;
-    int originalSize = E.size();
+
+    int originalSize = T.size();
+
 		std::cout << "The coff is " << coff << std::endl;
 		std::cout << "function splitEdges called " << std::endl;
-    for (int i = 0; i < originalSize; i++) {
+    for (int i = 0; i < E.size(); i++) {
         if (E[i].traiter == true) {
             continue;
         }
@@ -322,9 +329,10 @@ void Mesh::splitEdges(float l) {
 
             int triangleAdj0 = E[i].t[0];
             int triangleAdj1 = E[i].t[1];
-						if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
-							continue;
-						}
+            if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
+                    continue;
+            }
+
             //search for another point
             for (int k = 0; k < 3; k++) {
                 if ( E[i].contains(T[triangleAdj0].v[k]) == false) {
@@ -338,6 +346,12 @@ void Mesh::splitEdges(float l) {
 
             }
 
+            Triangle newTriangle0 = Triangle(nbPointA,nbPointC,V.size());
+            Triangle newTriangle1 = Triangle(nbPointC,nbPointB,V.size());
+            Triangle newTriangle2 = Triangle(nbPointB,nbPointD,V.size());
+            Triangle newTriangle3 = Triangle(nbPointD,nbPointA,V.size());
+            std::cout << "add triangles" << std::endl;
+
             T[triangleAdj0].willBeDelete = true;
             T[triangleAdj1].willBeDelete = true;
             middlePoint.p = (pointB.p + pointA.p) / 2;
@@ -345,11 +359,7 @@ void Mesh::splitEdges(float l) {
 
             //add two edges and four triangles
 
-            Triangle newTriangle0 = Triangle(nbPointA,nbPointC,V.size());
-            Triangle newTriangle1 = Triangle(nbPointC,nbPointB,V.size());
-            Triangle newTriangle2 = Triangle(nbPointB,nbPointD,V.size());
-            Triangle newTriangle3 = Triangle(nbPointD,nbPointA,V.size());
-						std::cout << "add triangles" << std::endl;
+
 
             V.push_back(middlePoint);
             T.push_back(newTriangle0);
@@ -360,128 +370,131 @@ void Mesh::splitEdges(float l) {
         }
 
     }
-    for (std::vector<Triangle>::iterator iter = T.begin(); iter != T.end(); iter++) {
-            if (iter->willBeDelete == true) //delete them
-            {
-                T.erase(iter);
-            }
-    }
-		createEdgeList();
+    // for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.begin() + originalSize; iter++) {
+    //         if (iter->willBeDelete == true) //delete them
+    //         {
+    //             iter->willBeDelete = false;
+    //             T.erase(iter);
+		//
+    //         }
+    // }
+
+    createEdgeList();
     return;
 
 }
 
-void Mesh::colapseEdges(float l){
-	float coff = l * 4.0 / 5.0;
-	int originalSize = E.size();
-	std::cout << "The coff is " << coff << std::endl;
-	std::cout << "function colapseEdges called " << std::endl;
-
-	for (int i = 0; i < originalSize; i++) {
-				//if (E[i].traiter == true) {
-					//	continue;
-				//}
-
-				Vertex pointA = V[E[i].v[0]];
-				Vertex pointB = V[E[i].v[1]];
-				int nbPointA = E[i].v[0];
-				int nbPointB = E[i].v[1];
-
-				Vertex middlePoint;
-				Vec3f length = pointA.p - pointB.p;
-
-				if (length.length() < coff ) {
-
-						 middlePoint.p = (pointB.p + pointA.p) / 2;
-						 middlePoint.n = (pointB.n + pointA.n) / 2;
-						// il reste à ajouter les edges du middlePoint qui sont en fait les edges de A et B (pas d'intersection entre les deux hormis E[i])
-						 V.push_back(middlePoint);
-						 int	valenceA = pointA.edge.size();
-						 int  valenceB = pointB.edge.size();
-						 int trianglesAdj;
-						 for (int j = 0; j < valenceA; j++) {
-								trianglesAdj = E[pointA.edge[j]].t.size();
-								for(int k = 0; k < trianglesAdj; k++){
-										// We verify if the triangle has both pointA and pointB as vertices in that case we'll delete without creating new triangle
-										if(T[E[pointA.edge[j]].t[k]].contains(nbPointB)){
-											std::cout << "no triangle added" << std::endl;
-											T[E[pointA.edge[j]].t[k]].willBeDelete = true;
-										}
-										// The case where the triangle doesn't have pointB in his vertices, we create a new triangle with the midpoint and delete the old one
-										// don't forget to make a clean delete and put the right data in the redunduncy
-										else{
-												unsigned int otherPointThanA[2];
-												if(T[E[pointA.edge[j]].t[k]].v[0] = nbPointB){
-													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[1];
-													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[2];
-												}
-
-												if(T[E[pointA.edge[j]].t[k]].v[1] = nbPointB){
-													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[0];
-													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[2];
-												}
-
-												if(T[E[pointA.edge[j]].t[k]].v[2] = nbPointB){
-													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[0];
-													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[1];
-												}
-												int nbPointC = otherPointThanA[0];
-												int nbPointD = otherPointThanA[1];
-												T[E[pointA.edge[j]].t[k]].willBeDelete = true;
-											  Triangle newTriangle = Triangle(nbPointC, nbPointD, V.size());
-												std::cout << "add triangles A" << std::endl;
-												T.push_back(newTriangle);
-										}
-								}
-						 }
-
-						for (int j = 0; j < valenceB; j++) {
-							trianglesAdj = E[pointB.edge[j]].t.size();
-							for(int k = 0; k < trianglesAdj; k++){
-									// We verify if the triangle has both pointA and pointB as vertices in that case we'll delete without creating new triangle
-									if(T[E[pointB.edge[j]].t[k]].contains(nbPointA)){
-										std::cout << "no triangle added" << std::endl;
-										//T[E[pointB.edge[j]].t[k]].willBeDelete = true;
-									}
-									// The case where the triangle doesn't have pointA in his vertices, we create a new triangle with the midpoint and delete the old one
-									// don't forget to make a clean delete and put the right data in the redunduncy
-									else{
-											unsigned int otherPointThanB[2];
-											if(T[E[pointB.edge[j]].t[k]].v[0] = nbPointA){
-												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[1];
-												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[2];
-											}
-
-											if(T[E[pointB.edge[j]].t[k]].v[1] = nbPointA){
-												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[0];
-												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[2];
-											}
-
-											if(T[E[pointB.edge[j]].t[k]].v[2] = nbPointA){
-												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[0];
-												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[1];
-											}
-											int nbPointC = otherPointThanB[0];
-											int nbPointD = otherPointThanB[1];
-											T[E[pointB.edge[j]].t[k]].willBeDelete = true;
-											Triangle newTriangle = Triangle(nbPointC, nbPointD, V.size());
-											std::cout << "add triangles B" << std::endl;
-											T.push_back(newTriangle);
-									}
-							}
-						}
-
-
-					}
-			}
-
-			for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.end(); iter++) {
-	            if (iter->willBeDelete == true) //delete them
-	            {
-	                T.erase(iter);
-	            }
-	    }
-				std::cout << "E.SIZE() IS" << E.size() << std::endl;
-			//createEdgeList();
-	    return;
-}
+//void Mesh::colapseEdges(float l){
+//	float coff = l * 4.0 / 5.0;
+//	int originalSize = E.size();
+//	std::cout << "The coff is " << coff << std::endl;
+//	std::cout << "function colapseEdges called " << std::endl;
+//
+//	for (int i = 0; i < originalSize; i++) {
+//				//if (E[i].traiter == true) {
+//					//	continue;
+//				//}
+//
+//				Vertex pointA = V[E[i].v[0]];
+//				Vertex pointB = V[E[i].v[1]];
+//				int nbPointA = E[i].v[0];
+//				int nbPointB = E[i].v[1];
+//
+//				Vertex middlePoint;
+//				Vec3f length = pointA.p - pointB.p;
+//
+//				if (length.length() < coff ) {
+//
+//						 middlePoint.p = (pointB.p + pointA.p) / 2;
+//						 middlePoint.n = (pointB.n + pointA.n) / 2;
+//						// il reste à ajouter les edges du middlePoint qui sont en fait les edges de A et B (pas d'intersection entre les deux hormis E[i])
+//						 V.push_back(middlePoint);
+//						 int	valenceA = pointA.edge.size();
+//						 int  valenceB = pointB.edge.size();
+//						 int trianglesAdj;
+//						 for (int j = 0; j < valenceA; j++) {
+//								trianglesAdj = E[pointA.edge[j]].t.size();
+//								for(int k = 0; k < trianglesAdj; k++){
+//										// We verify if the triangle has both pointA and pointB as vertices in that case we'll delete without creating new triangle
+//										if(T[E[pointA.edge[j]].t[k]].contains(nbPointB)){
+//											std::cout << "no triangle added" << std::endl;
+//											T[E[pointA.edge[j]].t[k]].willBeDelete = true;
+//										}
+//										// The case where the triangle doesn't have pointB in his vertices, we create a new triangle with the midpoint and delete the old one
+//										// don't forget to make a clean delete and put the right data in the redunduncy
+//										else{
+//												unsigned int otherPointThanA[2];
+//												if(T[E[pointA.edge[j]].t[k]].v[0] = nbPointB){
+//													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[1];
+//													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[2];
+//												}
+//
+//												if(T[E[pointA.edge[j]].t[k]].v[1] = nbPointB){
+//													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[0];
+//													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[2];
+//												}
+//
+//												if(T[E[pointA.edge[j]].t[k]].v[2] = nbPointB){
+//													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[0];
+//													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[1];
+//												}
+//												int nbPointC = otherPointThanA[0];
+//												int nbPointD = otherPointThanA[1];
+//												T[E[pointA.edge[j]].t[k]].willBeDelete = true;
+//											  Triangle newTriangle = Triangle(nbPointC, nbPointD, V.size());
+//												std::cout << "add triangles A" << std::endl;
+//												T.push_back(newTriangle);
+//										}
+//								}
+//						 }
+//
+//						for (int j = 0; j < valenceB; j++) {
+//							trianglesAdj = E[pointB.edge[j]].t.size();
+//							for(int k = 0; k < trianglesAdj; k++){
+//									// We verify if the triangle has both pointA and pointB as vertices in that case we'll delete without creating new triangle
+//									if(T[E[pointB.edge[j]].t[k]].contains(nbPointA)){
+//										std::cout << "no triangle added" << std::endl;
+//										//T[E[pointB.edge[j]].t[k]].willBeDelete = true;
+//									}
+//									// The case where the triangle doesn't have pointA in his vertices, we create a new triangle with the midpoint and delete the old one
+//									// don't forget to make a clean delete and put the right data in the redunduncy
+//									else{
+//											unsigned int otherPointThanB[2];
+//											if(T[E[pointB.edge[j]].t[k]].v[0] = nbPointA){
+//												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[1];
+//												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[2];
+//											}
+//
+//											if(T[E[pointB.edge[j]].t[k]].v[1] = nbPointA){
+//												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[0];
+//												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[2];
+//											}
+//
+//											if(T[E[pointB.edge[j]].t[k]].v[2] = nbPointA){
+//												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[0];
+//												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[1];
+//											}
+//											int nbPointC = otherPointThanB[0];
+//											int nbPointD = otherPointThanB[1];
+//											T[E[pointB.edge[j]].t[k]].willBeDelete = true;
+//											Triangle newTriangle = Triangle(nbPointC, nbPointD, V.size());
+//											std::cout << "add triangles B" << std::endl;
+//											T.push_back(newTriangle);
+//									}
+//							}
+//						}
+//
+//
+//					}
+//			}
+//
+//			for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.end(); iter++) {
+//	            if (iter->willBeDelete == true) //delete them
+//	            {
+//	                T.erase(iter);
+//	            }
+//	    }
+//				std::cout << "E.SIZE() IS" << E.size() << std::endl;
+//			//createEdgeList();
+//	    return;
+//}
