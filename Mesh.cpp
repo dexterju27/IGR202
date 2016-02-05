@@ -384,6 +384,104 @@ void Mesh::splitEdges(float l) {
 
 }
 
+void Mesh::flipEdges(){
+
+	std::cout << "function flipEdges called " << std::endl;
+	int originalSize = T.size();
+
+	for (int i = 0; i < E.size(); i++) {
+			//if (E[i].traiter == true) {
+			//		continue;
+			//}
+			Vertex pointA = V[E[i].v[0]];
+			Vertex pointB = V[E[i].v[1]];
+			Vertex pointC;
+			Vertex pointD;
+			int nbPointA = E[i].v[0];
+			int nbPointB = E[i].v[1];
+			int nbPointC = 0;
+			int nbPointD = 0;
+
+			if (E[i].t.size() == 2 ) {
+					//On exclue les frontières
+
+					int triangleAdj0 = E[i].t[0];
+					int triangleAdj1 = E[i].t[1];
+
+					//Si l'un des deux va être effacé, on passe à l'itération suivante
+					if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
+									continue;
+					}
+
+					//On cherche les points qui appartiennet aux triangles adjacents
+					//mais pas à l'edge étudié
+					for (int k = 0; k < 3; k++) {
+							if ( E[i].contains(T[triangleAdj0].v[k]) == false) {
+									nbPointC = T[triangleAdj0].v[k];
+									pointC = V[T[triangleAdj0].v[k]];
+							}
+							if ( E[i].contains(T[triangleAdj1].v[k]) == false) {
+									nbPointD = T[triangleAdj1].v[k];
+									pointD = V[T[triangleAdj1].v[k]];
+							}
+					}
+
+					Triangle newTriangle0 = Triangle(nbPointA,nbPointC,nbPointD);
+					Triangle newTriangle1 = Triangle(nbPointB,nbPointC,nbPointD);
+
+					std::cout << "add triangles" << std::endl;
+
+					T[triangleAdj0].willBeDelete = true;
+					T[triangleAdj1].willBeDelete = true;
+
+					T.push_back(newTriangle0);
+					T.push_back(newTriangle1);
+					//T.erase(triangleAdj0);
+					//T.erase(triangleAdj1);
+
+				}
+	}
+
+	for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.begin() + originalSize; iter++) {
+	       if (iter->willBeDelete == true) //delete them
+	       {
+	           iter->willBeDelete = false;
+	           T.erase(iter);
+         }
+	}
+
+	createEdgeList();
+	return;
+
+}
+
+float Mesh::computeL() {
+
+	float sum = 0;
+
+	//Faisable avec les edges directement plutôt que les triangles
+	for (size_t i = 0; i < T.size(); i++) {
+		Vertex & v0 = V[T[i].v[0]];
+		Vertex & v1 = V[T[i].v[1]];
+		Vertex & v2 = V[T[i].v[2]];
+
+		Vec3f point0 = Vec3f(v0.p);
+		Vec3f point1 = Vec3f(v1.p);
+		Vec3f point2 = Vec3f(v2.p);
+
+		Vec3f length0 = point1 - point0;
+		Vec3f length1 = point2 - point1;
+		Vec3f length2 = point2 - point0;
+
+		sum += length0.length() + length1.length() + length2.length();
+	}
+
+	float average = sum / (3*T.size());
+	std::cout << "Average edges length : " << average << std::endl;
+
+	return average * (0.78); //We take a target l equals to 78% of the average edges length
+}
+
 //void Mesh::colapseEdges(float l){
 //	float coff = l * 4.0 / 5.0;
 //	int originalSize = E.size();

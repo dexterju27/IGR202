@@ -61,7 +61,7 @@ public:
     }
 
     inline bool contains (unsigned int i) const { return (v[0] == i || v[1] == i); }
-    
+
     unsigned int v[3];
     unsigned int e[3];
     bool willBeDelete;
@@ -91,11 +91,15 @@ public:
 
     float max (float x, float y);
 
-  void splitEdges (float l );
+    void splitEdges (float l );
 
-  void colapseEdges(float l);
+    void colapseEdges(float l);
 
     void createEdgeList ();
+
+    void flipEdges();
+
+    float computeL();
 
 //  void splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle);
 };

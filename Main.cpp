@@ -33,6 +33,8 @@ static bool fullScreen = false;
 static Camera camera;
 static Mesh mesh;
 
+static float l = 0;
+
 void printUsage () {
 	std::cerr << std::endl
 		 << appTitle << std::endl
@@ -41,7 +43,12 @@ void printUsage () {
          << "Commands:" << std::endl
          << "------------------" << std::endl
          << " ?: Print help" << std::endl
-		 << " w: Toggle wireframe mode" << std::endl
+		     << " w: Toggle wireframe mode" << std::endl
+				 << " a: Compute the average edges length" << std::endl
+				 << " c: Create edges list" << std::endl
+			   << " s: Split edges (step 1)" << std::endl
+				 << " d: Collapse edges (step 2)" << std::endl
+		     << " l: Flip edges (step 3)" << std::endl
          << " <drag>+<left button>: rotate model" << std::endl
          << " <drag>+<right button>: move model" << std::endl
          << " <drag>+<middle button>: zoom" << std::endl
@@ -148,15 +155,23 @@ void key (unsigned char keyPressed, int x, int y) {
 		glGetIntegerv (GL_POLYGON_MODE, mode);
 		glPolygonMode (GL_FRONT_AND_BACK, mode[1] ==  GL_FILL ? GL_LINE : GL_FILL);
         break;
+		case 'a':
+			mesh.computeL();
+			break;
 		case 'c':
 			mesh.createEdgeList();
 			break;
 		case 's':
-			mesh.splitEdges (0.40);
-        break;
+		  l = mesh.computeL();
+			mesh.splitEdges (l);
+			//mesh.splitEdges (0.40);
+      break;
 		case 'd':
 		//	mesh.colapseEdges (0.40);
 		    break;
+		case 'l':
+		  mesh.flipEdges();
+			break;
     default:
         printUsage ();
         break;
