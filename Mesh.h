@@ -26,11 +26,28 @@
 class Vertex {
 public:
     inline Vertex () {}
-    inline Vertex (const Vec3f & p, const Vec3f & n) : p (p), n (n) {}
+    inline Vertex (Vertex & v) {p = v.p; n = v.n;
+      for (size_t i = 0; i < v.edge.size(); i++) {
+        /* code */
+        edge.clear();
+        edge[i] = t.edge[i];
+      }
+    }
+    inline Vertex & operator= (const Vertex & v) {
+      p = v.p;
+      n = v.n;
+      for (size_t i = 0; i < v.edge.size(); i++) {
+        /* code */
+        edge.clear();
+        edge[i] = t.edge[i];
+      }
+      return (*this); }
+    inline Vertex (const Vec3f & p, const Vec3f & n) : p (p), n (n) {willBeDelete = false;}
     inline virtual ~Vertex () {}
     Vec3f p;
     Vec3f n;
     std::vector<unsigned long> edge;
+    bool willBeDelete = false;
 };
 
 /// A Triangle class expressed as a triplet of indices (over an external vertex list)
@@ -94,9 +111,11 @@ public:
 
   void splitEdges (float l );
 
-  void colapseEdges(float l);
+  void collapseEdges(float l);
 
     void createEdgeList ();
+
+
 
 //  void splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle);
 };

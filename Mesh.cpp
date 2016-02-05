@@ -20,6 +20,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <algorithm>
 
 
 using namespace std;
@@ -187,7 +188,9 @@ void Mesh::createEdgeList() {
     for (int i = 0; i < V.size(); i++) {
         V[i].edge.clear(); //clear all the edges
     }
-
+		// for (int i = 0; i < T.size(); i++) {
+		// 		T[i].edge.clear(); //clear all the edges
+		// }
 		std::cout << "Creating list" << std::endl;
    // unsigned int id = 0;
     for (int i  = 0; i < T.size(); i++) {
@@ -264,16 +267,34 @@ void Mesh::createEdgeList() {
 
 
         }
-
     }
 
-		std::cout << "E.SIZE() is " << E.size() << std::endl;
-		for (size_t i = 0; i <  E.size(); i++) {
+		for (size_t i = 0; i < V.size(); i++) {
 			/* code */
-		if (E[i].t.size() > 2)
-		std::cout << i << std::endl;
-		std::cout << "the content is" << std::endl;
+			std::sort( V[i].edge.begin(), V[i].edge.end() );
+			V[i].edge.erase(std::unique( V[i].edge.begin(), V[i].edge.end() ), V[i].edge.end() );
+
+			std::cout << "The valence of "<< i << "is "<< 	V[i].edge.size() << std::endl;
+
 		}
+
+		for (size_t i = 0; i < E.size(); i++) {
+			/* code */
+			std::sort( E[i].t.begin(), E[i].t.end() );
+			E[i].t.erase(std::unique( E[i].t.begin(), E[i].t.end() ),E[i].t.end() );
+
+			// std::cout << "The valence of "<< i << "is "<< 	E[i].t.size() << std::endl;
+
+		}
+
+		std::cout << "E.SIZE() is " << E.size() << std::endl;
+		// for (size_t i = 0; i <  E.size(); i++) {
+		// 	/* code */
+		// if (E[i].t.size() > 2)
+		// // std::cout << i << std::endl;
+		// // std::cout << "In this edge pointA is	"<< E[i].<< std::endl;
+		// // std::cout << "the content is	" << std::endl;
+		// }
 		return;
 
 }
@@ -305,11 +326,9 @@ void Mesh::createEdgeList() {
 //
 //}
 
-
 void Mesh::splitEdges(float l) {
 		createEdgeList();
     float coff = l * 4.0 / 3.0;
-
     int originalSize = T.size();
 		for (size_t i = 0; i < originalSize; i++) {
 			if (T[i].willBeDelete) {
@@ -373,8 +392,8 @@ void Mesh::splitEdges(float l) {
 
             V.push_back(middlePoint);
             T.push_back(newTriangle0);
-						iter = iter + T.size() - 1;
-						std::cout << "the newly added	" <<iter->willBeDelete;
+						// iter = iter + T.size() - 1;
+						// std::cout << "the newly added	" <<iter->willBeDelete;
             T.push_back(newTriangle1);
             T.push_back(newTriangle2);
             T.push_back(newTriangle3);
@@ -383,12 +402,160 @@ void Mesh::splitEdges(float l) {
 
     }
 					int count = 0;
-					for (size_t i = 0; i < T.size (); i++) {
-						if (T[i].willBeDelete) {
-							/* code */
-							std::cout << "error here " << i << std::endl;
+					// for (size_t i = 0; i < T.size (); i++) {
+					// 	if (T[i].willBeDelete) {
+					// 		/* code */
+					// 		std::cout << "error here " << i << std::endl;
+					// 	}
+					// }
+
+		for (std::vector<Triangle>::iterator iter = T.begin();iter != T.end();) {
+			/* code */
+            if (iter->willBeDelete == true) //delete them
+            {
+								// iter->willBeDelete = false;
+								// std::cout << "the flag	" << iter->willBeDelete << std::endl;
+                iter = T.erase(iter);
+								// iter =  T.begin();
+								// std::cout << "Size of T "<<  T.size() << std::endl;
+								count++;
+								// std::cout << "iter : "
+								// 		<< iter->v[0] << " " << iter->v[1] << " " << iter->v[2]
+								// 		<< " " << iter->willBeDelete << std::endl;
+								// for (size_t i = 0; i < T.size (); i++) {
+								// 	/* code */
+								// 	std::cout << "T[" << i << "] : "
+								// 	<< T[i].v[0] << " " << T[i].v[1] << " " << T[i].v[2]
+								// 	<< " " << T[i].willBeDelete << std::endl;
+								// }
+            }
+						else {
+							iter++;
 						}
-					}
+
+
+    }
+		std::cout << "the number deleted " << count << std::endl;
+    // createEdgeList();
+    return;
+
+}
+
+void Mesh::collapseEdges(float l) {
+		createEdgeList();
+    float coff = l * 4.0 / 5.0;
+
+    int originalSize = T.size();
+		// for (size_t i = 0; i < originalSize; i++) {
+		// 	if (T[i].willBeDelete) {
+		// 		/* code */
+		// 		std::cout << "error here " << i << std::endl;
+		// 	}
+		// }
+		std::cout << "The coff is " << coff << std::endl;
+		std::cout << "function splitEdges called " << std::endl;
+    for (int i = 0; i < E.size(); i++) {
+        if (E[i].traiter == true) {
+            continue;
+        }
+        Vertex pointA = V[E[i].v[0]];
+        Vertex pointB = V[E[i].v[1]]; // two points of this edge
+
+
+        Vertex pointC;
+        Vertex pointD;
+        int nbPointA = E[i].v[0];
+        int nbPointB = E[i].v[1];
+        int nbPointC = 0;
+        int nbPointD = 0;
+				bool canBeModified = true; //use to check voisineage
+
+        Vertex middlePoint;
+        Vec3f length = pointA.p - pointB.p;
+				//std::cout << length.length() << "THe number of tiangle "<<  E[i].t.size() <<  std::endl;
+        if (length.length() <= coff && E[i].t.size() == 2 ) {
+            // il faut traiter ce edge
+						// verifier le primiere voisinage
+
+						for (size_t tIter = 0; tIter < T.size(); tIter++) {
+							/* code */
+							if (T[tIter].contains(nbPointA)) {
+								if (T[tIter].willBeDelete) {
+									/* code */
+									canBeModified = false;
+								}
+							}
+
+							if (T[tIter].contains(nbPointB)) {
+								if (T[tIter].willBeDelete) {
+									/* code */
+									canBeModified = false;
+								}
+							}
+
+						}
+						if (canBeModified == false) {
+							/* code */
+							continue; // can not play with him, what a pity
+						}
+
+						// Now GO to work
+						// for (size_t tIter = 0; tIter < T.size(); i++) {
+						// 	/* code */
+						// 	if (T[tIter].contains(pointA) && T[tIter].contains(pointA)) {
+						// 		/* code */
+						// 	}
+						//
+						// }
+
+            int triangleAdj0 = E[i].t[0];
+            int triangleAdj1 = E[i].t[1];
+						T[triangleAdj0].willBeDelete == true;
+						T[triangleAdj1].willBeDelete == true;
+						// FLAG TWO TRIANGLES TO BE deleted
+						V[nbPointA].willBeDelete = true;
+						V[nbPointB].willBeDelete = true;
+
+						// Add new triangles selon voisinage
+						for (size_t tIter = 0;  tIter< T.size(); ++) {
+							/* code */
+							if (T[tIter].contains(nbPointA) && T[tIter.contains(nbPointB)]) {
+								/* code */
+								continue;
+
+							}
+							if (T[tIter].contains(nbPointA)]) {
+								Triangle newTriangle = Triangle(T[tIter]);
+								for (size_t nbP = 0; nbP < 3; nbP++) {
+									/* code */
+									if (newTriangle.v[nbP] == nbPointA;) {
+										newTriangle.v[nbP] = V.size();
+									}
+									}
+									T[tIter].willBeDelete = true;
+									T.push_back(newTriangle);
+									continue;
+
+							}
+							if (T[tIter].contains(nbPointB)]) {
+								Triangle newTriangle = Triangle(T[tIter]);
+								for (size_t nbP = 0; nbP < 3; nbP++) {
+									/* code */
+									if (newTriangle.v[nbP] == nbPointA;) {
+										newTriangle.v[nbP] = V.size();
+									}
+									}
+									T[tIter].willBeDelete = true;
+									T.push_back(newTriangle);
+
+							}
+
+						}
+
+						middlePoint.p = (pointB.p + pointA.p) / 2;
+						middlePoint.n = (pointB.n + pointA.n) / 2;
+						V.push_back(middlePoint);
+
 
 		for (std::vector<Triangle>::iterator iter = T.begin();iter != T.end();) {
 			/* code */
@@ -421,118 +588,3 @@ void Mesh::splitEdges(float l) {
     return;
 
 }
-
-//void Mesh::colapseEdges(float l){
-//	float coff = l * 4.0 / 5.0;
-//	int originalSize = E.size();
-//	std::cout << "The coff is " << coff << std::endl;
-//	std::cout << "function colapseEdges called " << std::endl;
-//
-//	for (int i = 0; i < originalSize; i++) {
-//				//if (E[i].traiter == true) {
-//					//	continue;
-//				//}
-//
-//				Vertex pointA = V[E[i].v[0]];
-//				Vertex pointB = V[E[i].v[1]];
-//				int nbPointA = E[i].v[0];
-//				int nbPointB = E[i].v[1];
-//
-//				Vertex middlePoint;
-//				Vec3f length = pointA.p - pointB.p;
-//
-//				if (length.length() < coff ) {
-//
-//						 middlePoint.p = (pointB.p + pointA.p) / 2;
-//						 middlePoint.n = (pointB.n + pointA.n) / 2;
-//						// il reste à ajouter les edges du middlePoint qui sont en fait les edges de A et B (pas d'intersection entre les deux hormis E[i])
-//						 V.push_back(middlePoint);
-//						 int	valenceA = pointA.edge.size();
-//						 int  valenceB = pointB.edge.size();
-//						 int trianglesAdj;
-//						 for (int j = 0; j < valenceA; j++) {
-//								trianglesAdj = E[pointA.edge[j]].t.size();
-//								for(int k = 0; k < trianglesAdj; k++){
-//										// We verify if the triangle has both pointA and pointB as vertices in that case we'll delete without creating new triangle
-//										if(T[E[pointA.edge[j]].t[k]].contains(nbPointB)){
-//											std::cout << "no triangle added" << std::endl;
-//											T[E[pointA.edge[j]].t[k]].willBeDelete = true;
-//										}
-//										// The case where the triangle doesn't have pointB in his vertices, we create a new triangle with the midpoint and delete the old one
-//										// don't forget to make a clean delete and put the right data in the redunduncy
-//										else{
-//												unsigned int otherPointThanA[2];
-//												if(T[E[pointA.edge[j]].t[k]].v[0] = nbPointB){
-//													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[1];
-//													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[2];
-//												}
-//
-//												if(T[E[pointA.edge[j]].t[k]].v[1] = nbPointB){
-//													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[0];
-//													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[2];
-//												}
-//
-//												if(T[E[pointA.edge[j]].t[k]].v[2] = nbPointB){
-//													otherPointThanA[0] = T[E[pointA.edge[j]].t[k]].v[0];
-//													otherPointThanA[1] = T[E[pointA.edge[j]].t[k]].v[1];
-//												}
-//												int nbPointC = otherPointThanA[0];
-//												int nbPointD = otherPointThanA[1];
-//												T[E[pointA.edge[j]].t[k]].willBeDelete = true;
-//											  Triangle newTriangle = Triangle(nbPointC, nbPointD, V.size());
-//												std::cout << "add triangles A" << std::endl;
-//												T.push_back(newTriangle);
-//										}
-//								}
-//						 }
-//
-//						for (int j = 0; j < valenceB; j++) {
-//							trianglesAdj = E[pointB.edge[j]].t.size();
-//							for(int k = 0; k < trianglesAdj; k++){
-//									// We verify if the triangle has both pointA and pointB as vertices in that case we'll delete without creating new triangle
-//									if(T[E[pointB.edge[j]].t[k]].contains(nbPointA)){
-//										std::cout << "no triangle added" << std::endl;
-//										//T[E[pointB.edge[j]].t[k]].willBeDelete = true;
-//									}
-//									// The case where the triangle doesn't have pointA in his vertices, we create a new triangle with the midpoint and delete the old one
-//									// don't forget to make a clean delete and put the right data in the redunduncy
-//									else{
-//											unsigned int otherPointThanB[2];
-//											if(T[E[pointB.edge[j]].t[k]].v[0] = nbPointA){
-//												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[1];
-//												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[2];
-//											}
-//
-//											if(T[E[pointB.edge[j]].t[k]].v[1] = nbPointA){
-//												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[0];
-//												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[2];
-//											}
-//
-//											if(T[E[pointB.edge[j]].t[k]].v[2] = nbPointA){
-//												otherPointThanB[0] = T[E[pointB.edge[j]].t[k]].v[0];
-//												otherPointThanB[1] = T[E[pointB.edge[j]].t[k]].v[1];
-//											}
-//											int nbPointC = otherPointThanB[0];
-//											int nbPointD = otherPointThanB[1];
-//											T[E[pointB.edge[j]].t[k]].willBeDelete = true;
-//											Triangle newTriangle = Triangle(nbPointC, nbPointD, V.size());
-//											std::cout << "add triangles B" << std::endl;
-//											T.push_back(newTriangle);
-//									}
-//							}
-//						}
-//
-//
-//					}
-//			}
-//
-//			for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.end(); iter++) {
-//	            if (iter->willBeDelete == true) //delete them
-//	            {
-//	                T.erase(iter);
-//	            }
-//	    }
-//				std::cout << "E.SIZE() IS" << E.size() << std::endl;
-//			//createEdgeList();
-//	    return;
-//}

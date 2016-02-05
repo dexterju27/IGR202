@@ -21,15 +21,16 @@
 struct Edge {
 public:
   inline Edge (unsigned int v0, unsigned int v1) {
-      if (v0 < v1) {v[0] = v0; v[1] = v1; } else {v[0] = v1; v[1] = v0; traiter = false;}
+      if (v0 < v1) {v[0] = v0; v[1] = v1; } else {v[0] = v1; v[1] = v0; traiter = false; t.clear();}
   }
     inline Edge (const Edge & e) { v[0] = e.v[0]; v[1] = e.v[1]; traiter = e.traiter; for (size_t i = 0; i < e.t.size(); i++)  {
       t.push_back(e.t[i]);
       /* code */
     }}
   inline virtual ~Edge () {}
-  inline Edge & operator= (const Edge & e) { v[0] = e.v[0]; v[1] = e.v[1]; return (*this); }
-  inline bool operator== (const Edge & e) { return (v[0] == e.v[0] && v[1] == e.v[1]); }
+  inline Edge & operator= (const Edge & e) { v[0] = e.v[0]; v[1] = e.v[1]; for (size_t i = 0; i < e.t.size(); i++)  {
+    t[i] = e.t[i]; } return (*this); }
+  inline bool operator== (const Edge & e) { return (v[0] == e.v[0] && v[1] == e.v[1]);  }
   inline bool operator< (const Edge & e) { return (v[0] < e.v[0] || (v[0] == e.v[0] && v[1] < e.v[1])); }
 
     inline bool contains (unsigned int i) const { return (v[0] == i || v[1] == i); }
