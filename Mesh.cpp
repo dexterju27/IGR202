@@ -26,92 +26,92 @@ using namespace std;
 
 void Mesh::loadOFF (const std::string & filename) {
 	ifstream in (filename.c_str ());
-    if (!in)
-        exit (1);
+	if (!in)
+	exit (1);
 	string offString;
-    unsigned int sizeV, sizeT, tmp;
-    in >> offString >> sizeV >> sizeT >> tmp;
-    V.resize (sizeV);
-    T.resize (sizeT);
-    for (unsigned int i = 0; i < sizeV; i++)
-        in >> V[i].p;
-    int s;
-    for (unsigned int i = 0; i < sizeT; i++) {
-        in >> s;
-        for (unsigned int j = 0; j < 3; j++)
-            in >> T[i].v[j];
-    }
-    in.close ();
-    centerAndScaleToUnit ();
-    recomputeNormals ();
+	unsigned int sizeV, sizeT, tmp;
+	in >> offString >> sizeV >> sizeT >> tmp;
+	V.resize (sizeV);
+	T.resize (sizeT);
+	for (unsigned int i = 0; i < sizeV; i++)
+	in >> V[i].p;
+	int s;
+	for (unsigned int i = 0; i < sizeT; i++) {
+		in >> s;
+		for (unsigned int j = 0; j < 3; j++)
+		in >> T[i].v[j];
+	}
+	in.close ();
+	centerAndScaleToUnit ();
+	recomputeNormals ();
 }
 
 void Mesh::recomputeNormals () {
-    for (unsigned int i = 0; i < V.size (); i++)
-        V[i].n = Vec3f (0.0, 0.0, 0.0);
-    for (unsigned int i = 0; i < T.size (); i++) {
-        Vec3f e01 = V[T[i].v[1]].p -  V[T[i].v[0]].p;
-        Vec3f e02 = V[T[i].v[2]].p -  V[T[i].v[0]].p;
-        Vec3f n = cross (e01, e02);
-        n.normalize ();
-        for (unsigned int j = 0; j < 3; j++)
-            V[T[i].v[j]].n += n;
-    }
-    for (unsigned int i = 0; i < V.size (); i++)
-        V[i].n.normalize ();
+	for (unsigned int i = 0; i < V.size (); i++)
+	V[i].n = Vec3f (0.0, 0.0, 0.0);
+	for (unsigned int i = 0; i < T.size (); i++) {
+		Vec3f e01 = V[T[i].v[1]].p -  V[T[i].v[0]].p;
+		Vec3f e02 = V[T[i].v[2]].p -  V[T[i].v[0]].p;
+		Vec3f n = cross (e01, e02);
+		n.normalize ();
+		for (unsigned int j = 0; j < 3; j++)
+		V[T[i].v[j]].n += n;
+	}
+	for (unsigned int i = 0; i < V.size (); i++)
+	V[i].n.normalize ();
 }
 
 void Mesh::smooth () {
-		std::vector< vector<Vec3f> > voisinage;
-		for (size_t i = 0; i < V.size(); i++) {
-			vector<Vec3f> vosin;
-			for (size_t k = 0; k < T.size(); k++) {
-				Vec3f point  = V[i].p;
-				Vec3f e00 = V[T[k].v[0]].p;
-				Vec3f e01 = V[T[k].v[1]].p;
-				Vec3f e02 = V[T[k].v[2]].p;
-				if (point == e00) {
-					vosin.push_back(e01);
-					vosin.push_back(e02);
-					continue;
-				}
-				if (point == e01) {
-					vosin.push_back(e00);
-					vosin.push_back(e02);
-					continue;
-				}
-				if (point == e02) {
-					vosin.push_back(e00);
-					vosin.push_back(e01);
-					continue;
-				}
-				}
-				voisinage.push_back(vosin);
+	std::vector< vector<Vec3f> > voisinage;
+	for (size_t i = 0; i < V.size(); i++) {
+		vector<Vec3f> vosin;
+		for (size_t k = 0; k < T.size(); k++) {
+			Vec3f point  = V[i].p;
+			Vec3f e00 = V[T[k].v[0]].p;
+			Vec3f e01 = V[T[k].v[1]].p;
+			Vec3f e02 = V[T[k].v[2]].p;
+			if (point == e00) {
+				vosin.push_back(e01);
+				vosin.push_back(e02);
+				continue;
 			}
-			for (size_t i = 0; i < V.size(); i++) {
-				Vec3f sum(0.0, 0.0, 0.0);
-				for (size_t j = 0;j < voisinage[i].size();j++) {
-					sum += voisinage[i][j];
-				}
-				sum = sum / ( voisinage[i].size());
-				V[i].p = 	 sum;
+			if (point == e01) {
+				vosin.push_back(e00);
+				vosin.push_back(e02);
+				continue;
 			}
-			recomputeNormals();
+			if (point == e02) {
+				vosin.push_back(e00);
+				vosin.push_back(e01);
+				continue;
+			}
 		}
+		voisinage.push_back(vosin);
+	}
+	for (size_t i = 0; i < V.size(); i++) {
+		Vec3f sum(0.0, 0.0, 0.0);
+		for (size_t j = 0;j < voisinage[i].size();j++) {
+			sum += voisinage[i][j];
+		}
+		sum = sum / ( voisinage[i].size());
+		V[i].p = 	 sum;
+	}
+	recomputeNormals();
+}
 
 void Mesh::centerAndScaleToUnit () {
-    Vec3f c;
-    for  (unsigned int i = 0; i < V.size (); i++)
-        c += V[i].p;
-    c /= V.size ();
-    float maxD = dist (V[0].p, c);
-    for (unsigned int i = 0; i < V.size (); i++){
-        float m = dist (V[i].p, c);
-        if (m > maxD)
-            maxD = m;
-    }
-    for  (unsigned int i = 0; i < V.size (); i++)
-        V[i].p = (V[i].p - c) / maxD;
+	Vec3f c;
+	for  (unsigned int i = 0; i < V.size (); i++)
+	c += V[i].p;
+	c /= V.size ();
+	float maxD = dist (V[0].p, c);
+	for (unsigned int i = 0; i < V.size (); i++){
+		float m = dist (V[i].p, c);
+		if (m > maxD)
+		maxD = m;
+	}
+	for  (unsigned int i = 0; i < V.size (); i++)
+	V[i].p = (V[i].p - c) / maxD;
 }
 
 //void Mesh::splitEdges (float l ) {
@@ -183,92 +183,92 @@ void Mesh::centerAndScaleToUnit () {
 //}
 
 void Mesh::createEdgeList() {
-    E.clear();
-    for (int i = 0; i < V.size(); i++) {
-        V[i].edge.clear(); //clear all the edges
-    }
+	E.clear();
+	for (int i = 0; i < V.size(); i++) {
+		V[i].edge.clear(); //clear all the edges
+	}
 
-		std::cout << "Creating list" << std::endl;
-   // unsigned int id = 0;
-    for (int i  = 0; i < T.size(); i++) {
-        Edge edge0 = Edge(T[i].v[0], T[i].v[1]);
-        Edge edge1 = Edge(T[i].v[1], T[i].v[2]);
-        Edge edge2 = Edge(T[i].v[2], T[i].v[0]);
+	std::cout << "Creating list" << std::endl;
+	// unsigned int id = 0;
+	for (int i  = 0; i < T.size(); i++) {
+		Edge edge0 = Edge(T[i].v[0], T[i].v[1]);
+		Edge edge1 = Edge(T[i].v[1], T[i].v[2]);
+		Edge edge2 = Edge(T[i].v[2], T[i].v[0]);
 
-        int edgeIndex0 = -1;
-        int edgeIndex1 = -1;
-        int edgeIndex2 = -1;
+		int edgeIndex0 = -1;
+		int edgeIndex1 = -1;
+		int edgeIndex2 = -1;
 
-        for (int j  = 0; j < E.size(); j++) {
-					//check whether this edge is already in the list
-            if ( edge0 == E[j]) {
-                edgeIndex0 = j;
-            }
+		for (int j  = 0; j < E.size(); j++) {
+			//check whether this edge is already in the list
+			if ( edge0 == E[j]) {
+				edgeIndex0 = j;
+			}
 
-            if (edge1 == E[j]) {
-                edgeIndex1 = j;
-            }
+			if (edge1 == E[j]) {
+				edgeIndex1 = j;
+			}
 
-            if (edge2 == E[j]) {
-                edgeIndex2 = j;
-            }
-        }
+			if (edge2 == E[j]) {
+				edgeIndex2 = j;
+			}
+		}
 
-        // if edgeIndex == -1 add new edge
-        if (edgeIndex0 == -1) {
-            edge0.t.push_back(i);
-            V[T[i].v[0]].edge.push_back(E.size());
-            V[T[i].v[1]].edge.push_back(E.size());
-            T[i].e[0] = E.size();
-            E.push_back(edge0);
-        }
-        else {
-            E[edgeIndex0].t.push_back(i);
-            V[T[i].v[0]].edge.push_back(edgeIndex0);
-            V[T[i].v[1]].edge.push_back(edgeIndex0);
-            T[i].e[0] = edgeIndex0;
+		// if edgeIndex == -1 add new edge
+		if (edgeIndex0 == -1) {
+			edge0.t.push_back(i);
+			V[T[i].v[0]].edge.push_back(E.size());
+			V[T[i].v[1]].edge.push_back(E.size());
+			T[i].e[0] = E.size();
+			E.push_back(edge0);
+		}
+		else {
+			E[edgeIndex0].t.push_back(i);
+			V[T[i].v[0]].edge.push_back(edgeIndex0);
+			V[T[i].v[1]].edge.push_back(edgeIndex0);
+			T[i].e[0] = edgeIndex0;
 
-        }
+		}
 
-        if (edgeIndex1 == -1) {
-            edge1.t.push_back(i);
-            V[T[i].v[1]].edge.push_back(E.size());
-            V[T[i].v[2]].edge.push_back(E.size());
-            T[i].e[1] = E.size();
-            E.push_back(edge1);
+		if (edgeIndex1 == -1) {
+			edge1.t.push_back(i);
+			V[T[i].v[1]].edge.push_back(E.size());
+			V[T[i].v[2]].edge.push_back(E.size());
+			T[i].e[1] = E.size();
+			E.push_back(edge1);
 
-        }
-        else {
+		}
+		else {
 
-            E[edgeIndex1].t.push_back(i);
-            V[T[i].v[1]].edge.push_back(edgeIndex1);
-            V[T[i].v[2]].edge.push_back(edgeIndex1);
-            T[i].e[1] = edgeIndex1;
-
-
-        }
-
-        if (edgeIndex2 == -1) {
-            edge2.t.push_back(i);
-            V[T[i].v[2]].edge.push_back(E.size());
-            V[T[i].v[0]].edge.push_back(E.size());
-            T[i].e[2] = E.size();
-            E.push_back(edge2);
-            }
-
-        else {
-            E[edgeIndex2].t.push_back(i);
-            V[T[i].v[2]].edge.push_back(edgeIndex2);
-            V[T[i].v[0]].edge.push_back(edgeIndex2);
-            T[i].e[2] = edgeIndex2;
+			E[edgeIndex1].t.push_back(i);
+			V[T[i].v[1]].edge.push_back(edgeIndex1);
+			V[T[i].v[2]].edge.push_back(edgeIndex1);
+			T[i].e[1] = edgeIndex1;
 
 
-        }
+		}
 
-    }
+		if (edgeIndex2 == -1) {
+			edge2.t.push_back(i);
+			V[T[i].v[2]].edge.push_back(E.size());
+			V[T[i].v[0]].edge.push_back(E.size());
+			T[i].e[2] = E.size();
+			E.push_back(edge2);
+		}
 
-		std::cout << "E.SIZE() is " << E.size() << std::endl;
-		return;
+		else {
+			E[edgeIndex2].t.push_back(i);
+			V[T[i].v[2]].edge.push_back(edgeIndex2);
+			V[T[i].v[0]].edge.push_back(edgeIndex2);
+			T[i].e[2] = edgeIndex2;
+
+
+		}
+
+	}
+
+	std::cout << "E.SIZE() is " << E.size() << std::endl;
+	return;
 
 }
 //void Mesh::splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle) {
@@ -302,158 +302,272 @@ void Mesh::createEdgeList() {
 
 void Mesh::splitEdges(float l) {
 
-    float coff = l * 4.0 / 3.0;
+	float coff = l * 4.0 / 3.0;
 
-    int originalSize = T.size();
-
-		std::cout << "The coff is " << coff << std::endl;
-		std::cout << "function splitEdges called " << std::endl;
-    for (int i = 0; i < E.size(); i++) {
-        if (E[i].traiter == true) {
-            continue;
-        }
-        Vertex pointA = V[E[i].v[0]];
-        Vertex pointB = V[E[i].v[1]]; // two points
-        Vertex pointC;
-        Vertex pointD;
-        int nbPointA = E[i].v[0];
-        int nbPointB = E[i].v[1];
-        int nbPointC = 0;
-        int nbPointD = 0;
-
-        Vertex middlePoint;
-        Vec3f length = pointA.p - pointB.p;
-				//std::cout << length.length() << "THe number of tiangle "<<  E[i].t.size() <<  std::endl;
-        if (length.length() >= coff && E[i].t.size() == 2 ) {
-            //split do nothing with frontier
-
-            int triangleAdj0 = E[i].t[0];
-            int triangleAdj1 = E[i].t[1];
-            if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
-                    continue;
-            }
-
-            //search for another point
-            for (int k = 0; k < 3; k++) {
-                if ( E[i].contains(T[triangleAdj0].v[k]) == false) {
-                    nbPointC = T[triangleAdj0].v[k];
-                    pointC = V[T[triangleAdj0].v[k]];
-                }
-                if ( E[i].contains(T[triangleAdj1].v[k]) == false) {
-                    nbPointD = T[triangleAdj1].v[k];
-                    pointD = V[T[triangleAdj1].v[k]];
-                }
-
-            }
-
-            Triangle newTriangle0 = Triangle(nbPointA,nbPointC,V.size());
-            Triangle newTriangle1 = Triangle(nbPointC,nbPointB,V.size());
-            Triangle newTriangle2 = Triangle(nbPointB,nbPointD,V.size());
-            Triangle newTriangle3 = Triangle(nbPointD,nbPointA,V.size());
-            std::cout << "add triangles" << std::endl;
-
-            T[triangleAdj0].willBeDelete = true;
-            T[triangleAdj1].willBeDelete = true;
-            middlePoint.p = (pointB.p + pointA.p) / 2;
-            middlePoint.n = (pointB.n + pointA.n) / 2;
-
-            //add two edges and four triangles
-
-
-
-            V.push_back(middlePoint);
-            T.push_back(newTriangle0);
-            T.push_back(newTriangle1);
-            T.push_back(newTriangle2);
-            T.push_back(newTriangle3);
-
-        }
-
-    }
-    // for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.begin() + originalSize; iter++) {
-    //         if (iter->willBeDelete == true) //delete them
-    //         {
-    //             iter->willBeDelete = false;
-    //             T.erase(iter);
-		//
-    //         }
-    // }
-
-    createEdgeList();
-    return;
-
-}
-
-void Mesh::flipEdges(){
-
-	std::cout << "function flipEdges called " << std::endl;
 	int originalSize = T.size();
 
+	std::cout << "The coff is " << coff << std::endl;
+	std::cout << "function splitEdges called " << std::endl;
 	for (int i = 0; i < E.size(); i++) {
-			//if (E[i].traiter == true) {
-			//		continue;
-			//}
-			Vertex pointA = V[E[i].v[0]];
-			Vertex pointB = V[E[i].v[1]];
-			Vertex pointC;
-			Vertex pointD;
-			int nbPointA = E[i].v[0];
-			int nbPointB = E[i].v[1];
-			int nbPointC = 0;
-			int nbPointD = 0;
+		if (E[i].traiter == true) {
+			continue;
+		}
+		Vertex pointA = V[E[i].v[0]];
+		Vertex pointB = V[E[i].v[1]]; // two points
+		Vertex pointC;
+		Vertex pointD;
+		int nbPointA = E[i].v[0];
+		int nbPointB = E[i].v[1];
+		int nbPointC = 0;
+		int nbPointD = 0;
 
-			if (E[i].t.size() == 2 ) {
-					//On exclue les frontières
+		Vertex middlePoint;
+		Vec3f length = pointA.p - pointB.p;
+		//std::cout << length.length() << "THe number of tiangle "<<  E[i].t.size() <<  std::endl;
+		if (length.length() >= coff && E[i].t.size() == 2 ) {
+			//split do nothing with frontier
 
-					int triangleAdj0 = E[i].t[0];
-					int triangleAdj1 = E[i].t[1];
+			int triangleAdj0 = E[i].t[0];
+			int triangleAdj1 = E[i].t[1];
+			if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
+				continue;
+			}
 
-					//Si l'un des deux va être effacé, on passe à l'itération suivante
-					if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
-									continue;
-					}
-
-					//On cherche les points qui appartiennet aux triangles adjacents
-					//mais pas à l'edge étudié
-					for (int k = 0; k < 3; k++) {
-							if ( E[i].contains(T[triangleAdj0].v[k]) == false) {
-									nbPointC = T[triangleAdj0].v[k];
-									pointC = V[T[triangleAdj0].v[k]];
-							}
-							if ( E[i].contains(T[triangleAdj1].v[k]) == false) {
-									nbPointD = T[triangleAdj1].v[k];
-									pointD = V[T[triangleAdj1].v[k]];
-							}
-					}
-
-					Triangle newTriangle0 = Triangle(nbPointA,nbPointC,nbPointD);
-					Triangle newTriangle1 = Triangle(nbPointB,nbPointC,nbPointD);
-
-					std::cout << "add triangles" << std::endl;
-
-					T[triangleAdj0].willBeDelete = true;
-					T[triangleAdj1].willBeDelete = true;
-
-					T.push_back(newTriangle0);
-					T.push_back(newTriangle1);
-					//T.erase(triangleAdj0);
-					//T.erase(triangleAdj1);
-
+			//search for another point
+			for (int k = 0; k < 3; k++) {
+				if ( E[i].contains(T[triangleAdj0].v[k]) == false) {
+					nbPointC = T[triangleAdj0].v[k];
+					pointC = V[T[triangleAdj0].v[k]];
 				}
-	}
+				if ( E[i].contains(T[triangleAdj1].v[k]) == false) {
+					nbPointD = T[triangleAdj1].v[k];
+					pointD = V[T[triangleAdj1].v[k]];
+				}
 
+			}
+
+			Triangle newTriangle0 = Triangle(nbPointA,nbPointC,V.size());
+			Triangle newTriangle1 = Triangle(nbPointC,nbPointB,V.size());
+			Triangle newTriangle2 = Triangle(nbPointB,nbPointD,V.size());
+			Triangle newTriangle3 = Triangle(nbPointD,nbPointA,V.size());
+			std::cout << "add triangles" << std::endl;
+
+			T[triangleAdj0].willBeDelete = true;
+			T[triangleAdj1].willBeDelete = true;
+			middlePoint.p = (pointB.p + pointA.p) / 2;
+			middlePoint.n = (pointB.n + pointA.n) / 2;
+
+			//add two edges and four triangles
+
+
+
+			V.push_back(middlePoint);
+			T.push_back(newTriangle0);
+			T.push_back(newTriangle1);
+			T.push_back(newTriangle2);
+			T.push_back(newTriangle3);
+
+		}
+
+	}
 	for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.begin() + originalSize; iter++) {
-	       if (iter->willBeDelete == true) //delete them
-	       {
-	           iter->willBeDelete = false;
-	           T.erase(iter);
-         }
+		if (iter->willBeDelete == true) //delete them
+		{
+			T.erase(iter);
+		}
 	}
 
 	createEdgeList();
 	return;
 
 }
+
+
+
+void Mesh::flipEdges(){
+
+	int flipCounter = 0;
+	int originalSize = T.size();
+
+	for (int i = 0; i < E.size(); i++) {
+
+		E[i].enCours = true;
+
+		Vertex pointA = V[E[i].v[0]];
+		Vertex pointB = V[E[i].v[1]];
+		Vertex pointC;
+		Vertex pointD;
+		int nbPointA = E[i].v[0];
+		int nbPointB = E[i].v[1];
+		int nbPointC = 0;
+		int nbPointD = 0;
+
+		if (E[i].t.size() == 2 ) {
+			//On exclue les frontières
+
+			int valenceA = V[E[i].v[0]].edge.size() / 2;
+			int valenceB = V[E[i].v[1]].edge.size() / 2;
+
+			std::cout << "valence de A : " << valenceA << std::endl;
+			std::cout << "valence de B : " << valenceB << std::endl;
+
+			if (valenceA == 6 && valenceB == 6) {
+
+				std::cout << "valence de A et de B égales à 6 : flip !" << std::endl;
+				flipCounter ++;
+
+				int triangleAdj0 = E[i].t[0];
+				int triangleAdj1 = E[i].t[1];
+
+				//Si l'un des deux va être effacé, on passe à l'itération suivante
+				if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
+					continue;
+				}
+
+				//On cherche les points qui appartiennet aux triangles adjacents
+				//mais pas à l'edge étudié
+				for (int k = 0; k < 3; k++) {
+					if (E[i].contains(T[triangleAdj0].v[k]) == false) {
+						nbPointC = T[triangleAdj0].v[k];
+						pointC = V[T[triangleAdj0].v[k]];
+					}
+					if (E[i].contains(T[triangleAdj1].v[k]) == false) {
+						nbPointD = T[triangleAdj1].v[k];
+						pointD = V[T[triangleAdj1].v[k]];
+					}
+				}
+
+				Triangle newTriangle0 = Triangle(nbPointA, nbPointC, nbPointD);
+				Triangle newTriangle1 = Triangle(nbPointB, nbPointC, nbPointD);
+
+				T[triangleAdj0].willBeDelete = true;
+				T[triangleAdj1].willBeDelete = true;
+
+				T.push_back(newTriangle0);
+				T.push_back(newTriangle1);
+			}
+		}
+		E[i].enCours = false;
+	}
+
+	int eraseCount = 0;
+	for (std::vector<Triangle>::iterator iter = T.begin(); iter != T.end(); iter++) {
+		if (iter->willBeDelete) //delete them
+		{
+			iter = T.erase(iter);
+			eraseCount++;
+		}
+	}
+	for (std::vector<Triangle>::iterator iter = T.begin(); iter != T.end(); iter++) {
+		if (iter->willBeDelete) //delete them
+		{
+			iter = T.erase(iter);
+			eraseCount++;
+		}
+	}
+
+	std::cout << "Nombre de flips effectués : " << flipCounter << std::endl;
+	std::cout << "Nombre de triangles effacés : " << eraseCount << std::endl;
+
+	createEdgeList();
+	return;
+
+}
+
+/*
+void Mesh::flipEdges(){
+
+int flipCounter = 0;
+int originalSize = T.size();
+
+for (int i = 0; i < T.size(); i++) {
+
+Vertex pointA = V[T[i].v[0]];
+Vertex pointB = V[T[i].v[1]];
+Vertex pointC;
+Vertex pointD;
+int nbPointA = T[i].v[0];
+int nbPointB = T[i].v[1];
+int nbPointC = 0;
+int nbPointD = 0;
+
+
+//Calcul de la valence des vertexs de l'edge étudié
+int valenceA = 0;
+int valenceB = 0;
+for (int j = 0; j < T.size(); j++) {
+if (T[j].v[0] == nbPointA || T[j].v[1] == nbPointA || T[j].v[2] == nbPointB) {
+valenceA+=2;
+//std::cout << "valenceA ++ sur edge n° : " << j << std::endl;
+}
+if (T[j].v[0] == nbPointB || T[j].v[1] == nbPointB || T[j].v[2] == nbPointB) {
+valenceB+=2;
+//std::cout << "valenceB ++ sur edge n° : " << j << std::endl;
+}
+}
+
+std::cout << "valence de A : " << valenceA << std::endl;
+std::cout << "valence de B : " << valenceB << std::endl;
+
+if (false) {
+
+std::cout << "valence de A et de B égales à 6 : flip !" << std::endl;
+flipCounter ++;
+
+int triangleAdj0 = E[i].t[0];
+int triangleAdj1 = E[i].t[1];
+
+//Si l'un des deux va être effacé, on passe à l'itération suivante
+if (T[triangleAdj0].willBeDelete == true || T[triangleAdj1].willBeDelete == true) {
+std::cout << "continue" << std::endl;
+continue;
+}
+else {
+T[triangleAdj0].willBeDelete = false;
+T[triangleAdj1].willBeDelete = false;
+}
+
+//On cherche les points qui appartiennet aux triangles adjacents
+//mais pas à l'edge étudié
+for (int k = 0; k < 3; k++) {
+if (E[i].contains(T[triangleAdj0].v[k]) == false) {
+nbPointC = T[triangleAdj0].v[k];
+pointC = V[T[triangleAdj0].v[k]];
+}
+if (E[i].contains(T[triangleAdj1].v[k]) == false) {
+nbPointD = T[triangleAdj1].v[k];
+pointD = V[T[triangleAdj1].v[k]];
+}
+}
+
+Triangle newTriangle0 = Triangle(nbPointA,nbPointC,nbPointD);
+Triangle newTriangle1 = Triangle(nbPointB,nbPointC,nbPointD);
+
+std::cout << "add triangles" << std::endl;
+
+T[triangleAdj0].willBeDelete = true;
+T[triangleAdj1].willBeDelete = true;
+
+T.push_back(newTriangle0);
+T.push_back(newTriangle1);
+}
+}
+
+for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.begin() + originalSize; iter++) {
+if (iter->willBeDelete == true) //delete them
+{
+// iter->willBeDelete = false;
+T.erase(iter);
+}
+}
+
+std::cout << "Nombre de flips effectués : " << flipCounter << std::endl;
+
+createEdgeList();
+return;
+
+}
+*/
 
 float Mesh::computeL() {
 

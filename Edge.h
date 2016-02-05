@@ -37,6 +37,7 @@ public:
 
     unsigned int v[2];
     std::vector<int> t;
+
     bool traiter;
 
 };
