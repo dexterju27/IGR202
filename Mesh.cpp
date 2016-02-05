@@ -268,6 +268,12 @@ void Mesh::createEdgeList() {
     }
 
 		std::cout << "E.SIZE() is " << E.size() << std::endl;
+		for (size_t i = 0; i <  E.size(); i++) {
+			/* code */
+		if (E[i].t.size() > 2)
+		std::cout << i << std::endl;
+		std::cout << "the content is" << std::endl;
+		}
 		return;
 
 }
@@ -301,11 +307,16 @@ void Mesh::createEdgeList() {
 
 
 void Mesh::splitEdges(float l) {
-
+		createEdgeList();
     float coff = l * 4.0 / 3.0;
 
     int originalSize = T.size();
-
+		for (size_t i = 0; i < originalSize; i++) {
+			if (T[i].willBeDelete) {
+				/* code */
+				std::cout << "error here " << i << std::endl;
+			}
+		}
 		std::cout << "The coff is " << coff << std::endl;
 		std::cout << "function splitEdges called " << std::endl;
     for (int i = 0; i < E.size(); i++) {
@@ -351,7 +362,6 @@ void Mesh::splitEdges(float l) {
             Triangle newTriangle2 = Triangle(nbPointB,nbPointD,V.size());
             Triangle newTriangle3 = Triangle(nbPointD,nbPointA,V.size());
             std::cout << "add triangles" << std::endl;
-
             T[triangleAdj0].willBeDelete = true;
             T[triangleAdj1].willBeDelete = true;
             middlePoint.p = (pointB.p + pointA.p) / 2;
@@ -359,10 +369,12 @@ void Mesh::splitEdges(float l) {
 
             //add two edges and four triangles
 
-
+						std::vector<Triangle>::iterator iter = T.begin();
 
             V.push_back(middlePoint);
             T.push_back(newTriangle0);
+						iter = iter + T.size() - 1;
+						std::cout << "the newly added	" <<iter->willBeDelete;
             T.push_back(newTriangle1);
             T.push_back(newTriangle2);
             T.push_back(newTriangle3);
@@ -370,16 +382,42 @@ void Mesh::splitEdges(float l) {
         }
 
     }
-    // for (std::vector<Triangle>::iterator iter = T.begin(); iter < T.begin() + originalSize; iter++) {
-    //         if (iter->willBeDelete == true) //delete them
-    //         {
-    //             iter->willBeDelete = false;
-    //             T.erase(iter);
-		//
-    //         }
-    // }
+					int count = 0;
+					for (size_t i = 0; i < T.size (); i++) {
+						if (T[i].willBeDelete) {
+							/* code */
+							std::cout << "error here " << i << std::endl;
+						}
+					}
 
-    createEdgeList();
+		for (std::vector<Triangle>::iterator iter = T.begin();iter != T.end();) {
+			/* code */
+            if (iter->willBeDelete == true) //delete them
+            {
+								// iter->willBeDelete = false;
+								std::cout << "the flag	" << iter->willBeDelete << std::endl;
+                iter = T.erase(iter);
+								// iter =  T.begin();
+								std::cout << "Size of T "<<  T.size() << std::endl;
+								count++;
+								std::cout << "iter : "
+										<< iter->v[0] << " " << iter->v[1] << " " << iter->v[2]
+										<< " " << iter->willBeDelete << std::endl;
+								for (size_t i = 0; i < T.size (); i++) {
+									/* code */
+									std::cout << "T[" << i << "] : "
+									<< T[i].v[0] << " " << T[i].v[1] << " " << T[i].v[2]
+									<< " " << T[i].willBeDelete << std::endl;
+								}
+            }
+						else {
+							iter++;
+						}
+
+
+    }
+		std::cout << "the number deleted " << count << std::endl;
+    // createEdgeList();
     return;
 
 }

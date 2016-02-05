@@ -57,11 +57,12 @@ public:
         v[0] = t.v[0];
         v[1] = t.v[1];
         v[2] = t.v[2];
+        willBeDelete = t.willBeDelete;
         return (*this);
     }
 
     inline bool contains (unsigned int i) const { return (v[0] == i || v[1] == i); }
-    
+
     unsigned int v[3];
     unsigned int e[3];
     bool willBeDelete;
