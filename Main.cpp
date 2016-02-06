@@ -155,7 +155,7 @@ void key (unsigned char keyPressed, int x, int y) {
 			mesh.splitEdges (0.40);
         break;
 		case 'd':
-			mesh.collapseEdges (0.40);
+			mesh.collapseEdges (0.80);
 		    break;
     default:
         printUsage ();

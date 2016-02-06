@@ -274,7 +274,7 @@ void Mesh::createEdgeList() {
 			std::sort( V[i].edge.begin(), V[i].edge.end() );
 			V[i].edge.erase(std::unique( V[i].edge.begin(), V[i].edge.end() ), V[i].edge.end() );
 
-			std::cout << "The valence of "<< i << "is "<< 	V[i].edge.size() << std::endl;
+			// std::cout << "The valence of "<< i << "is "<< 	V[i].edge.size() << std::endl;
 
 		}
 
@@ -330,14 +330,15 @@ void Mesh::splitEdges(float l) {
 		createEdgeList();
     float coff = l * 4.0 / 3.0;
     int originalSize = T.size();
-		for (size_t i = 0; i < originalSize; i++) {
-			if (T[i].willBeDelete) {
-				/* code */
-				std::cout << "error here " << i << std::endl;
-			}
-		}
-		std::cout << "The coff is " << coff << std::endl;
-		std::cout << "function splitEdges called " << std::endl;
+		// Debuging
+		// for (size_t i = 0; i < originalSize; i++) {
+		// 	if (T[i].willBeDelete) {
+		// 		/* code */
+		// 		std::cout << "error here " << i << std::endl;
+		// 	}
+		// }
+		// std::cout << "The coff is " << coff << std::endl;
+		// std::cout << "function splitEdges called " << std::endl;
     for (int i = 0; i < E.size(); i++) {
         if (E[i].traiter == true) {
             continue;
@@ -444,7 +445,8 @@ void Mesh::splitEdges(float l) {
 void Mesh::collapseEdges(float l) {
 		createEdgeList();
     float coff = l * 4.0 / 5.0;
-
+		std::cout << "V " << V.size() << std::endl;
+		std::cout << "T " << T.size() << std::endl;
     int originalSize = T.size();
 		// for (size_t i = 0; i < originalSize; i++) {
 		// 	if (T[i].willBeDelete) {
@@ -476,59 +478,72 @@ void Mesh::collapseEdges(float l) {
         if (length.length() <= coff && E[i].t.size() == 2 ) {
             // il faut traiter ce edge
 						// verifier le primiere voisinage
+						// for point A
+						int adjA = E[i].t[0];
+						int adjB = E[i].t[1];
 
-						for (size_t tIter = 0; tIter < T.size(); tIter++) {
+						if (T[adjA].willBeDelete == true || T[adjB].willBeDelete == true) {
+							continue;
+						}
+
+						//Check the rest voisinage
+
+						for (size_t eIter = 0;eIter < V[nbPointA].edge.size();eIter++) {
 							/* code */
-							if (T[tIter].contains(nbPointA)) {
-								if (T[tIter].willBeDelete) {
-									/* code */
-									canBeModified = false;
-								}
+							int thisEdge = V[nbPointA].edge[eIter];
+							if ( E[thisEdge].t.size() != 2) {
+								canBeModified = false;
+								break;
 							}
-
-							if (T[tIter].contains(nbPointB)) {
-								if (T[tIter].willBeDelete) {
-									/* code */
+							int adjOfVoisineA = E[thisEdge].t[0];
+							int adjOfVoisineB = E[thisEdge].t[1];
+							if (T[adjOfVoisineA].willBeDelete == true || T[adjOfVoisineB].willBeDelete == true) {
 									canBeModified = false;
-								}
+									break;
 							}
 
 						}
+
+						for (size_t eIter = 0;eIter < V[nbPointB].edge.size();eIter++) {
+							/* code */
+							int thisEdge = V[nbPointB].edge[eIter];
+							if ( E[thisEdge].t.size() != 2) {
+								canBeModified = false;
+								break;
+							}
+							int adjOfVoisineA = E[thisEdge].t[0];
+							int adjOfVoisineB = E[thisEdge].t[1];
+							if (T[adjOfVoisineA].willBeDelete == true || T[adjOfVoisineB].willBeDelete == true) {
+									canBeModified = false;
+									break;
+							}
+
+						}
+
 						if (canBeModified == false) {
 							/* code */
-							continue; // can not play with him, what a pity
+							continue;
 						}
 
-						// Now GO to work
-						// for (size_t tIter = 0; tIter < T.size(); i++) {
-						// 	/* code */
-						// 	if (T[tIter].contains(pointA) && T[tIter].contains(pointA)) {
-						// 		/* code */
-						// 	}
-						//
-						// }
 
-            int triangleAdj0 = E[i].t[0];
-            int triangleAdj1 = E[i].t[1];
-						T[triangleAdj0].willBeDelete == true;
-						T[triangleAdj1].willBeDelete == true;
-						// FLAG TWO TRIANGLES TO BE deleted
-						V[nbPointA].willBeDelete = true;
-						V[nbPointB].willBeDelete = true;
+						T[adjA].willBeDelete = true;
+						T[adjB].willBeDelete = true;
 
-						// Add new triangles selon voisinage
-						for (size_t tIter = 0;  tIter< T.size(); ++) {
+						// find other triangles
+
+						for (size_t tIter = 0;  tIter< T.size(); tIter++) {
 							/* code */
-							if (T[tIter].contains(nbPointA) && T[tIter.contains(nbPointB)]) {
+							if (T[tIter].contains(nbPointA) && T[tIter].contains(nbPointB)) {
 								/* code */
-								continue;
+								T[tIter].willBeDelete =true;
 
 							}
-							if (T[tIter].contains(nbPointA)]) {
-								Triangle newTriangle = Triangle(T[tIter]);
+
+						else if (T[tIter].contains(nbPointA)) {
+								Triangle newTriangle = Triangle(T[tIter].v[0],T[tIter].v[1],T[tIter].v[2]);
 								for (size_t nbP = 0; nbP < 3; nbP++) {
 									/* code */
-									if (newTriangle.v[nbP] == nbPointA;) {
+									if (newTriangle.v[nbP] == nbPointA) {
 										newTriangle.v[nbP] = V.size();
 									}
 									}
@@ -537,17 +552,17 @@ void Mesh::collapseEdges(float l) {
 									continue;
 
 							}
-							if (T[tIter].contains(nbPointB)]) {
-								Triangle newTriangle = Triangle(T[tIter]);
+							else if (T[tIter].contains(nbPointB)) {
+								Triangle newTriangle = Triangle(T[tIter].v[0],T[tIter].v[1],T[tIter].v[2]);
 								for (size_t nbP = 0; nbP < 3; nbP++) {
 									/* code */
-									if (newTriangle.v[nbP] == nbPointA;) {
+									if (newTriangle.v[nbP] == nbPointB) {
 										newTriangle.v[nbP] = V.size();
 									}
 									}
 									T[tIter].willBeDelete = true;
 									T.push_back(newTriangle);
-
+									continue;
 							}
 
 						}
@@ -555,27 +570,37 @@ void Mesh::collapseEdges(float l) {
 						middlePoint.p = (pointB.p + pointA.p) / 2;
 						middlePoint.n = (pointB.n + pointA.n) / 2;
 						V.push_back(middlePoint);
+						std::cout << "Point A is 	"<< nbPointA << std::endl;
+						std::cout << "Point B is 	"<< nbPointB << std::endl;
 
+						for (size_t iter = 0;iter < T.size();iter++) {
+							/* code */
+							std::cout << "T[" << iter << "]"
+									<< T[iter].v[0] << " " << T[iter].v[1] << " " << T[iter].v[2] <<"	" << T[iter].willBeDelete<< endl;
+						}
 
-		for (std::vector<Triangle>::iterator iter = T.begin();iter != T.end();) {
+						for (size_t iter = 0;iter < T.size();iter++) {
+							/* code */
+							for (size_t nV = 0; nV < 3; nV++) {
+								/* code */
+							if (	T[iter].v[nV] == nbPointA || 	T[iter].v[nV] == nbPointB) {
+								/* code */
+								T[iter].willBeDelete = true;
+							}
+							}
+
+						}
+
+					}
+				}
+				int count = 0;
+				for (std::vector<Triangle>::iterator iter = T.begin();iter != T.end();) {
 			/* code */
             if (iter->willBeDelete == true) //delete them
             {
-								// iter->willBeDelete = false;
-								std::cout << "the flag	" << iter->willBeDelete << std::endl;
+
                 iter = T.erase(iter);
-								// iter =  T.begin();
-								std::cout << "Size of T "<<  T.size() << std::endl;
-								count++;
-								std::cout << "iter : "
-										<< iter->v[0] << " " << iter->v[1] << " " << iter->v[2]
-										<< " " << iter->willBeDelete << std::endl;
-								for (size_t i = 0; i < T.size (); i++) {
-									/* code */
-									std::cout << "T[" << i << "] : "
-									<< T[i].v[0] << " " << T[i].v[1] << " " << T[i].v[2]
-									<< " " << T[i].willBeDelete << std::endl;
-								}
+
             }
 						else {
 							iter++;

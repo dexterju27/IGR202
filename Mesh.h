@@ -26,23 +26,27 @@
 class Vertex {
 public:
     inline Vertex () {}
-    inline Vertex (Vertex & v) {p = v.p; n = v.n;
-      for (size_t i = 0; i < v.edge.size(); i++) {
-        /* code */
-        edge.clear();
-        edge[i] = t.edge[i];
-      }
+    inline Vertex (const Vec3f & p, const Vec3f & n) : p (p), n (n) {
+      // willBeDelete = false;
     }
-    inline Vertex & operator= (const Vertex & v) {
-      p = v.p;
-      n = v.n;
-      for (size_t i = 0; i < v.edge.size(); i++) {
-        /* code */
-        edge.clear();
-        edge[i] = t.edge[i];
-      }
-      return (*this); }
-    inline Vertex (const Vec3f & p, const Vec3f & n) : p (p), n (n) {willBeDelete = false;}
+    //   inline Vertex (Vertex & v) {
+    //   p = v.p;
+    //   n = v.n;
+    //     edge.clear();
+    //   for (size_t i = 0; i < v.edge.size(); i++) {
+    //     /* code */
+    //     edge[i] = v.edge[i];
+    //   }
+    // }
+    // inline Vertex & operator= (const Vertex & v) {
+    //   p = v.p;
+    //   n = v.n;
+    //   edge.clear();
+    //   for (size_t i = 0; i < v.edge.size(); i++) {
+    //     /* code */
+    //     edge[i] = v.edge[i];
+    //   }
+    //   return (*this); }
     inline virtual ~Vertex () {}
     Vec3f p;
     Vec3f n;
