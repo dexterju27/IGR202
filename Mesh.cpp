@@ -25,6 +25,35 @@
 
 using namespace std;
 
+
+
+float Mesh::computeL() {
+
+	float sum = 0;
+
+	//Faisable avec les edges directement plutôt que les triangles
+	for (size_t i = 0; i < T.size(); i++) {
+		Vertex & v0 = V[T[i].v[0]];
+		Vertex & v1 = V[T[i].v[1]];
+		Vertex & v2 = V[T[i].v[2]];
+
+		Vec3f point0 = Vec3f(v0.p);
+		Vec3f point1 = Vec3f(v1.p);
+		Vec3f point2 = Vec3f(v2.p);
+
+		Vec3f length0 = point1 - point0;
+		Vec3f length1 = point2 - point1;
+		Vec3f length2 = point2 - point0;
+
+		sum += length0.length() + length1.length() + length2.length();
+	}
+
+	float average = sum / (3*T.size());
+	std::cout << "Average edges length : " << average << std::endl;
+
+	return average * (0.78); //We take a target l equals to 78% of the average edges length
+}
+
 void Mesh::loadOFF (const std::string & filename) {
 	ifstream in (filename.c_str ());
     if (!in)
@@ -381,7 +410,7 @@ void Mesh::splitEdges(float l) {
             Triangle newTriangle1 = Triangle(nbPointC,nbPointB,V.size());
             Triangle newTriangle2 = Triangle(nbPointB,nbPointD,V.size());
             Triangle newTriangle3 = Triangle(nbPointD,nbPointA,V.size());
-            std::cout << "add triangles" << std::endl;
+            // std::cout << "add triangles" << std::endl;
             T[triangleAdj0].willBeDelete = true;
             T[triangleAdj1].willBeDelete = true;
             middlePoint.p = (pointB.p + pointA.p) / 2;
@@ -453,9 +482,9 @@ void Mesh::collapseEdges(float l) {
 		std::cout << "function splitEdges called " << std::endl;
 		std::cout << "T[58].contains	"<< T[58].contains(22) << std::endl;
     for (int i = 0; i < E.size(); i++) {
-        if (E[i].traiter == true) {
-            continue;
-        }
+        // if (E[i].traiter == true) {
+        //     continue;
+        // }
         Vertex pointA = V[E[i].v[0]];
         Vertex pointB = V[E[i].v[1]]; // two points of this edge
 
@@ -562,11 +591,11 @@ void Mesh::collapseEdges(float l) {
 						std::cout << "Point A is 	"<< nbPointA << std::endl;
 						std::cout << "Point B is 	"<< nbPointB << std::endl;
 
-						for (size_t iter = 0;iter < T.size();iter++) {
-							/* code */
-							std::cout << "T[" << iter << "]"
-									<< T[iter].v[0] << " " << T[iter].v[1] << " " << T[iter].v[2] <<"	" << T[iter].willBeDelete<< endl;
-						}
+						// for (size_t iter = 0;iter < T.size();iter++) {
+						// 	/* code */
+						// 	std::cout << "T[" << iter << "]"
+						// 			<< T[iter].v[0] << " " << T[iter].v[1] << " " << T[iter].v[2] <<"	" << T[iter].willBeDelete<< endl;
+						// }
 
 						for (size_t iter = 0;iter < T.size();iter++) {
 							/* code */

@@ -32,6 +32,7 @@ static bool fullScreen = false;
 
 static Camera camera;
 static Mesh mesh;
+float l = 1.0;
 
 void printUsage () {
 	std::cerr << std::endl
@@ -148,14 +149,17 @@ void key (unsigned char keyPressed, int x, int y) {
 		glGetIntegerv (GL_POLYGON_MODE, mode);
 		glPolygonMode (GL_FRONT_AND_BACK, mode[1] ==  GL_FILL ? GL_LINE : GL_FILL);
         break;
+		case 'l':
+			l = mesh.computeL();
+			break;
 		case 'c':
 			mesh.createEdgeList();
 			break;
 		case 's':
-			mesh.splitEdges (0.40);
+			mesh.splitEdges (l);
         break;
 		case 'd':
-			mesh.collapseEdges (0.80);
+			mesh.collapseEdges (l);
 		    break;
     default:
         printUsage ();

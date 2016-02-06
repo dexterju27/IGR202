@@ -119,6 +119,8 @@ public:
 
     void createEdgeList ();
 
+    float computeL();
+
 
 
 //  void splitEdgesHanderOne (std::vector<Edge> edgesWaiting, int numberOfTriangle);
