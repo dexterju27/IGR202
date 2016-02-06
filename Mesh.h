@@ -82,7 +82,7 @@ public:
         return (*this);
     }
 
-    inline bool contains (unsigned int i) const { return (v[0] == i || v[1] == i); }
+    inline bool contains (unsigned int i) const { return (v[0] == i || v[1] == i || v[2] == i); }
 
     unsigned int v[3];
     unsigned int e[3];

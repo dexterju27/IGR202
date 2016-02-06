@@ -448,14 +448,10 @@ void Mesh::collapseEdges(float l) {
 		std::cout << "V " << V.size() << std::endl;
 		std::cout << "T " << T.size() << std::endl;
     int originalSize = T.size();
-		// for (size_t i = 0; i < originalSize; i++) {
-		// 	if (T[i].willBeDelete) {
-		// 		/* code */
-		// 		std::cout << "error here " << i << std::endl;
-		// 	}
-		// }
+
 		std::cout << "The coff is " << coff << std::endl;
 		std::cout << "function splitEdges called " << std::endl;
+		std::cout << "T[58].contains	"<< T[58].contains(22) << std::endl;
     for (int i = 0; i < E.size(); i++) {
         if (E[i].traiter == true) {
             continue;
@@ -531,15 +527,9 @@ void Mesh::collapseEdges(float l) {
 
 						// find other triangles
 
-						for (size_t tIter = 0;  tIter< T.size(); tIter++) {
+						for (size_t tIter = 0;  tIter < T.size(); tIter++) {
 							/* code */
-							if (T[tIter].contains(nbPointA) && T[tIter].contains(nbPointB)) {
-								/* code */
-								T[tIter].willBeDelete =true;
-
-							}
-
-						else if (T[tIter].contains(nbPointA)) {
+						if (T[tIter].contains(nbPointA)) {
 								Triangle newTriangle = Triangle(T[tIter].v[0],T[tIter].v[1],T[tIter].v[2]);
 								for (size_t nbP = 0; nbP < 3; nbP++) {
 									/* code */
@@ -547,9 +537,8 @@ void Mesh::collapseEdges(float l) {
 										newTriangle.v[nbP] = V.size();
 									}
 									}
-									T[tIter].willBeDelete = true;
+
 									T.push_back(newTriangle);
-									continue;
 
 							}
 							else if (T[tIter].contains(nbPointB)) {
@@ -560,9 +549,9 @@ void Mesh::collapseEdges(float l) {
 										newTriangle.v[nbP] = V.size();
 									}
 									}
-									T[tIter].willBeDelete = true;
+									// T[tIter].willBeDelete = true;
 									T.push_back(newTriangle);
-									continue;
+									// continue;
 							}
 
 						}
